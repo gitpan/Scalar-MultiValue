@@ -15,9 +15,11 @@ use 5.006 ;
 
 use strict qw(vars);
 
+no warnings ;
+
 use vars qw($VERSION @ISA) ;
 
-$VERSION = '0.01' ;
+$VERSION = '0.02' ;
 
 @ISA = qw(Object::MultiType) ;
 
@@ -45,7 +47,7 @@ sub new {
   ) ;
   
   $$this->{period} = $inf{period} || 1 ;
-  $$this->{lastpos} = $inf{lastpos} ne '' ? $inf{lastpos} : undef ;
+  $$this->{lastpos} = $inf{lastpos} ne '' ? $inf{lastpos} : 0 ;
   $$this->{counter} = -1 ;
   
   bless($this,$class) ;
