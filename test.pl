@@ -29,6 +29,25 @@ use warnings qw'all' ;
 
 }
 #########################
+{
+
+  my $s = new Scalar::MultiValue('#000000 #FFFFFF') ;
+  
+  ok($s) ;
+  
+  my @val ;
+  
+  push(@val , "$s") ;
+  push(@val , "$s") ;
+  push(@val , "$s") ;
+  push(@val , "$s->{last}") ;
+  push(@val , "$s") ;
+  push(@val , "$s->{last}") ;
+  
+  ok( join(" ",@val) , "#000000 #FFFFFF #000000 #000000 #FFFFFF #FFFFFF") ;
+  
+}
+#########################
 
 print "\nThe End! By!\n" ;
 

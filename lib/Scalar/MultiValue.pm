@@ -19,7 +19,7 @@ no warnings ;
 
 use vars qw($VERSION @ISA) ;
 
-$VERSION = '0.02' ;
+$VERSION = '0.03' ;
 
 @ISA = qw(Object::MultiType) ;
 
@@ -44,13 +44,25 @@ sub new {
   my $this = Object::MultiType->new(
   scalarsub => \&content ,
   array     => \@values ,
+  tiehash   => 'Scalar::MultiValue::TieHash' ,
+  tieonuse  => 1 ,
   ) ;
   
   $$this->{period} = $inf{period} || 1 ;
   $$this->{lastpos} = $inf{lastpos} ne '' ? $inf{lastpos} : 0 ;
   $$this->{counter} = -1 ;
+  $$this->{last} = '' ;
   
   bless($this,$class) ;
+}
+
+########
+# LAST #
+########
+
+sub last {
+  my $this = shift ;
+  return $$this->{last} ;
 }
 
 ###########
@@ -73,7 +85,9 @@ sub content {
     }
   }
   
-  return @{$$this->{a}}[ $$this->{lastpos} ] ;
+  $$this->{last} = @{$$this->{a}}[ $$this->{lastpos} ] ;
+  
+  return $$this->{last} ;
 }
 
 #########
@@ -98,6 +112,74 @@ sub period {
   
   return $$this->{period} ;
 }
+
+###############################
+# SCALAR::MULTIVALUE::TIEHASH #
+###############################
+
+package Scalar::MultiValue::TieHash ;
+
+use strict qw(vars);
+
+sub TIEHASH {
+  my $class = shift ;
+  my $multi = shift ;
+
+  my $this = { h => $multi } ;
+  bless($this,$class) ;
+}
+
+sub FETCH {
+  my $this = shift ;
+  my $key = shift ;
+  return $this->{h}{$key} ;
+}  
+
+sub STORE {
+  my $this = shift ;
+  my $key = shift ;
+  return $this->{h}{$key} = $_[0] ;
+}
+ 
+sub DELETE {
+  my $this = shift ;
+  my $key = shift ;
+  return delete $this->{h}{$key} ;
+}
+
+sub EXISTS {
+  my $this = shift ;
+  my $key = shift ;
+  return exists $this->{h}{$key} ;
+}
+
+sub FIRSTKEY {
+  my $this = shift ;
+  my $key = shift ;
+  return (keys %{$this->{h}})[0] ;
+}
+
+sub NEXTKEY {
+  my $this = shift ;
+  my $keylast = shift ;
+  
+  my $ret_next ;
+  foreach my $keys_i ( keys %{$this->{h}} ) {
+    if ($ret_next) { return $keys_i ;}
+    if ($keys_i eq $keylast || !defined $keylast) { $ret_next = 1 ;}
+  }
+
+  return undef ;
+}
+
+sub CLEAR {
+  my $this = shift ;
+  %{$this->{h}} = () ;
+  return ;
+}
+
+sub UNTIE {}
+sub DESTROY {}
 
 #######
 # END #
@@ -195,6 +277,10 @@ Redefining all the values:
 
 =head1 METHODS
 
+=head2 last()
+
+Return the last value (without change the internal counter).
+
 =head2 reset()
 
 Reset the internal counter for the PERIOD.
@@ -202,6 +288,15 @@ Reset the internal counter for the PERIOD.
 =head2 period(VAL)
 
 Return the period or define it when I<VAL> is defined.
+
+=head2 ATTRIBUTES
+
+From version 0.03 you also can access the values of the methods above as an attributes (HASH key):
+
+  my $colors = new Scalar::MultiValue('#CCCCCC #999999') ;
+  
+  print "<font color='$colors'>Main Color</font>\n" ;
+  print "<font color='$colors->{last}'>Previous Color</font>\n" ; 
 
 =head1 EXAMPLE
 
@@ -234,7 +329,7 @@ L<Scalar::Util>.
 
 =head1 AUTHOR
 
-Graciliano M. P. <gm@virtuasites.com.br>
+Graciliano M. P. <gmpassos@cpan.org>
 
 I will appreciate any type of feedback (include your opinions and/or suggestions). ;-P
 

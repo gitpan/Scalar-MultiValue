@@ -10,7 +10,7 @@ WriteMakefile(
     'PREREQ_PM'     => {'Object::MultiType'  => 0.04} ,
     ($] >= 5.005 ?
       ( ABSTRACT_FROM => 'lib/Scalar/MultiValue.pm',
-        AUTHOR        => 'Graciliano M. P. <gm@virtuasites.com.br>'
+        AUTHOR        => 'Graciliano M. P. <gmpassos@cpan.org>'
        ) : ()
      ),
 );
